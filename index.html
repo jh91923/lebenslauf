@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lebenslauf-Editor</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700&family=Playfair+Display:wght@700;900&display=swap">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#eef0f3;--surface:#fff;--text:#1b2430;--muted:#66717a;--line:#d5d9df;--accent:#12335e;--accent-text:#fff;--danger:#a63d2f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12171d;--surface:#1b222b;--text:#e8ecf0;--muted:#93a0aa;--line:#2b3540;--accent:#6f9fd8;--accent-text:#0a1522;--danger:#e58b7d}}
+:root[data-theme="dark"]{--bg:#12171d;--surface:#1b222b;--text:#e8ecf0;--muted:#93a0aa;--line:#2b3540;--accent:#6f9fd8;--accent-text:#0a1522;--danger:#e58b7d}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 "Exo 2",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif}
+button,input,textarea{font:inherit;color:inherit}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 14px}
+.tabs{display:flex;max-width:640px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.tabs button{flex:1;border:0;background:none;padding:9px;font-weight:600;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-text)}
+main{max-width:860px;margin:0 auto;padding:14px}
+#edit{max-width:640px;margin:0 auto}
+fieldset{border:1px solid var(--line);background:var(--surface);border-radius:12px;margin:0 0 16px;padding:14px}
+legend{font-weight:700;padding:0 6px}
+label{display:block;font-size:.8rem;font-weight:600;color:var(--muted);margin:10px 0 3px}
+input[type=text],textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:16px}
+textarea{min-height:80px;resize:vertical}
+input:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.entry{border-top:1px dashed var(--line);margin-top:12px;padding-top:2px}
+.entry:first-of-type{border-top:0;margin-top:0}
+.btn{font-weight:600;border:1px solid var(--accent);background:none;color:var(--accent);padding:9px 14px;border-radius:10px}
+.btn.fill{background:var(--accent);color:var(--accent-text)}
+.btn.del{border-color:var(--danger);color:var(--danger);margin-top:10px;padding:6px 10px;font-size:.85rem}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.hint{color:var(--muted);font-size:.85rem}
+.hide{display:none}
+.thumb{width:72px;height:72px;border-radius:50%;object-fit:cover;background:var(--line)}
+/* Lebenslauf-Blatt (A4, wird auf Bildschirmbreite skaliert) */
+#wrap{width:100%;overflow:hidden}
+#cv{width:794px;display:flex;flex-direction:column;gap:16px;transform-origin:top left;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page,#meas{font:13px/1.55 "Exo 2",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;color:#222}
+.page{width:794px;height:1120px;flex:none;display:grid;grid-template-columns:275px 1fr;background:#fff;overflow:hidden;box-shadow:0 2px 14px rgba(0,0,0,.2)}
+#meas{position:absolute;left:-9999px;top:0;width:451px;visibility:hidden}
+.ci{display:flex;align-items:flex-start;gap:7px;margin-bottom:2px}.ci svg{width:12px;height:12px;fill:#0f3057;flex:none;margin-top:4px}
+.u{display:flow-root}.u.s{padding-top:20px}.main>.u:first-child{padding-top:0}
+#cv .side{background:#0f3057;color:#fff;padding:38px 38px 30px}
+#cv .main{padding:38px 38px 24px 30px;display:flex;flex-direction:column}
+.ph{width:200px;height:200px;border-radius:50%;overflow:hidden;display:block;margin:0 0 34px -2px;background:rgba(255,255,255,.12)}
+.ph img{width:100%;height:100%;object-fit:cover;display:block;transform-origin:center}
+.pe{width:140px;height:140px;border-radius:50%;overflow:hidden;background:var(--line);touch-action:none;cursor:grab;flex:none}
+.pe img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;user-select:none;-webkit-user-select:none}
+input[type=range]{width:100%}
+.sb{border-top:1px solid #fff;margin-top:26px;padding-top:12px}
+.sb h3{margin:0 0 10px;font-size:15px;letter-spacing:2.5px;text-transform:uppercase;font-weight:700}
+.sb p{margin:0 0 3px}
+.lr{display:flex;justify-content:space-between;margin-top:8px}
+.bar2{height:5px;background:rgba(255,255,255,.28);margin:3px 0 4px}
+.bar2 i{display:block;height:100%;background:#fff}
+.sb ul{margin:0;padding-left:16px}
+.name{font:700 26px/1.2 "Playfair Display",Didot,"Bodoni 72",Georgia,serif;color:#111;margin:0}
+.name span{display:block;color:#111}
+.ttl{font:900 44px/1.1 "Playfair Display",Didot,"Bodoni 72",Georgia,serif;color:#0f3057;margin:0 0 10px}
+.contact{margin:34px 0 8px;color:#444}
+.sec{border-top:1.5px solid #0f3057;margin:0;padding-top:12px}
+.sec h2{margin:0 0 8px;font-size:15px;letter-spacing:2.5px;text-transform:uppercase;color:#0f3057;font-weight:700}
+.sec p{margin:0}
+.job{padding-bottom:18px}
+.job ul{margin:6px 0 0;padding-left:16px}
+.foot{margin-top:auto;padding-top:24px;color:#888;font-size:11px}
+.sig{font:italic 20px "Snell Roundhand","Segoe Script",cursive;color:#777}
+@media print{body{background:#fff}.bar,#edit,.noprint,.phx{display:none!important}main{max-width:none;padding:0}#wrap{height:auto!important;overflow:visible}#cv{transform:none!important;width:210mm;gap:0}.page{box-shadow:none;width:210mm;height:297mm;break-after:page}.page:last-child{break-after:auto}@page{size:A4;margin:0}}
+</style>
+</head>
+<body>
+<div class="bar"><div class="tabs" role="tablist">
+  <button role="tab" id="t-edit" aria-selected="true">Bearbeiten</button>
+  <button role="tab" id="t-view" aria-selected="false">Vorschau</button>
+</div></div>
+<main>
+  <div id="edit"></div>
+  <div id="view" class="hide">
+    <div id="wrap"><div id="cv"></div></div>
+    <div class="row noprint"><button class="btn fill" id="print">Als PDF speichern</button></div>
+    <p class="hint noprint">Im Druckdialog „Als PDF sichern“ wählen. Falls nichts passiert, die Seite in Safari öffnen und über Teilen → Drucken speichern.</p>
+  </div>
+</main>
+<div id="meas" aria-hidden="true"></div>
+<script>
+var KEY="lebenslauf-daten-v3";
+var G=[
+{g:"jobs",t:"Berufserfahrung",add:"Station hinzufügen",f:[["date","Zeitraum (z. B. 10/2016 – Aktuell)"],["company","Arbeitgeber"],["place","Ort"],["role","Position"],["bullets","Aufgaben und Erfolge, eine pro Zeile","a"]]},
+{g:"edu",t:"Ausbildung",add:"Ausbildung hinzufügen",f:[["date","Zeitraum"],["school","Hochschule oder Schule"],["degree","Abschluss (z. B. Master of Science)"],["field","Studiengang"]]},
+{g:"it",t:"IT-Skills",add:"Skill hinzufügen",f:[["name","Programm oder Skill"],["level","Niveau (z. B. sehr gute Kenntnisse)"]]},
+{g:"langs",t:"Sprachen",add:"Sprache hinzufügen",f:[["name","Sprache"],["level","Niveau (A1 bis C2 oder Muttersprache)"]]},
+{g:"str",t:"Persönliche Stärken",add:"Stärke hinzufügen",f:[["title","Stärke"],["desc","Beschreibung"]]},
+{g:"certs",t:"Zertifikate",add:"Zertifikat hinzufügen",f:[["date","Datum (z. B. 06/2019)"],["title","Bezeichnung"]]}
+];
+var P=[["name","Vor- und Nachname"],["phone","Telefon"],["email","E-Mail"],["addr","Adresse"],["place","Ort für die Unterschrift"],["summary","Zusammenfassung","a"]];
+var sample={p:{name:"Maria Thomsson",phone:"0164 222 3333",email:"thomsson_maria@fmail.com",addr:"Berliner Platz 46, 70174 Stuttgart",place:"Stuttgart",photo:"",
+summary:"Als innovationsorientierte Ingenieurin mit 10+ Jahren Erfahrung im Automobilbereich eines Zulieferers reizt es mich täglich durch meine Kenntnisse im Qualitätsmanagement sowie der Schadensanalyse Prozesse voranzutreiben und die Qualität weiter zu erhöhen."},
+jobs:[{date:"10/2016 – Aktuell",company:"FERCHAU GmbH",place:"Stuttgart",role:"Projekt- und Teamleitung",bullets:"Leitung eines 8-köpfigen Teams zur Analyse und Durchführung von Funktionstests der Schadensanalyse.\nKonzeptionierung von Testsystemen.\nEffizienzsteigerung der Entwicklung und Produktion von Sensoren um 13 %."},
+{date:"10/2014 – 09/2016",company:"Mahle International GmbH",place:"Stuttgart",role:"Projekt- und Teamassistenz",bullets:"Unterstützung der Projekt- und Teamleitung eines Teams mit 15 Personen.\nControlling und Reporting von 7 Projekten."}],
+edu:[{date:"10/2012 – 09/2014",school:"TU München",degree:"Master of Science",field:"Automotive Engineering"},{date:"10/2009 – 09/2012",school:"Universität Stuttgart",degree:"Bachelor of Science",field:"Fahrzeug und Motorentechnik"}],
+it:[{name:"MATLAB/Simulink",level:"hervorragende Kenntnisse"},{name:"CAD",level:"sehr gute Kenntnisse"},{name:"Toolset 32",level:"gute Kenntnisse"}],
+langs:[{name:"Deutsch",level:"Muttersprache"},{name:"Englisch",level:"C1"},{name:"Spanisch",level:"B2"}],
+str:[{title:"Führungsstärke",desc:"Leitung eines Teams von 8 Mitarbeitern"},{title:"Datenanalyse",desc:"Qualitätsmanagement & Schadensanalyse"}],
+certs:[{date:"06/2019",title:"MathWorks Certification Program – Zertifizierte MATLAB- & Simulink-Expertin"}]};
+function blank(){return{p:{name:"",phone:"",email:"",addr:"",place:"",photo:"",summary:""},jobs:[],edu:[],it:[],langs:[],str:[],certs:[]}}
+var d;
+try{d=JSON.parse(localStorage.getItem(KEY))}catch(e){d=null}
+if(!d||!d.p)d=blank();
+var DT={jobs:"Berufserfahrung",edu:"Ausbildung",it:"IT-Skills",langs:"Sprachen",str:"Persönliche Stärken",certs:"Zertifikate"};
+function initCfg(){if(!d.cfg)d.cfg={};for(var k in DT){if(!d.cfg[k])d.cfg[k]={t:DT[k],on:true}}}
+initCfg();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function fld(g,i,k,label,v,area){
+  var a='data-g="'+g+'" data-i="'+i+'" data-k="'+k+'"';
+  return '<label>'+label+'</label>'+(area?'<textarea '+a+'>'+esc(v)+'</textarea>':'<input type="text" '+a+' value="'+esc(v)+'">');
+}
+function pt(p){var z=+p.pz||1,x=+p.px||0,y=+p.py||0;return'transform:translate('+x+'%,'+y+'%) scale('+z+')'}
+function photoEditor(p){
+  return'<div class="row"><div class="pe" id="pe"><img src="'+p.photo+'" alt="" style="'+pt(p)+'"></div><div style="flex:1;min-width:150px"><label>Zoom</label><input type="range" id="zoom" min="1" max="3" step="0.05" value="'+(+p.pz||1)+'"><button class="btn" id="preset" style="margin-top:10px">Position zurücksetzen</button></div></div><p class="hint">Bild im Kreis mit dem Finger verschieben, mit dem Regler zoomen.</p>';
+}
+function renderEdit(){
+  var p=d.p,h='<fieldset><legend>Persönliche Daten</legend><div class="row" style="margin-top:0">'+
+  (p.photo?'<img class="thumb" src="'+p.photo+'" alt="">':'<div class="thumb"></div>')+
+  '<label class="btn" style="margin:0">Foto wählen<input type="file" id="photo" accept="image/*" hidden></label>'+
+  (p.photo?'<button class="btn del" id="nophoto" style="margin:0">Entfernen</button>':'')+'</div>'+(p.photo?photoEditor(p):'');
+  P.forEach(function(x){h+=fld("p",0,x[0],x[1],p[x[0]],x[2])});
+  h+='</fieldset>';
+  G.forEach(function(s){
+    var cf=d.cfg[s.g];
+    h+='<fieldset><legend>'+esc(cf.t)+(cf.on?'':' (ausgeblendet)')+'</legend><label>Überschrift im Lebenslauf</label><input type="text" data-g="cfg" data-k="'+s.g+'" value="'+esc(cf.t)+'"><div class="row" style="margin-top:8px"><button class="btn" data-tog="'+s.g+'">'+(cf.on?'Abschnitt entfernen':'Abschnitt wieder einblenden')+'</button></div>';
+    d[s.g].forEach(function(e,i){
+      h+='<div class="entry">';
+      s.f.forEach(function(x){h+=fld(s.g,i,x[0],x[1],e[x[0]],x[2])});
+      h+='<button class="btn del" data-del="'+s.g+':'+i+'">Eintrag löschen</button></div>';
+    });
+    h+='<div class="row"><button class="btn" data-add="'+s.g+'">'+s.add+'</button></div></fieldset>';
+  });
+  h+='<div class="row"><button class="btn fill" id="go">Vorschau ansehen</button><button class="btn del" id="clear" style="margin-top:0">Alles leeren</button></div><p class="hint">Deine Eingaben bleiben automatisch auf diesem Gerät gespeichert.</p>';
+  $("edit").innerHTML=h;
+}
+var LV={A1:[15,"Grundkenntnisse"],A2:[30,"Grundkenntnisse"],B1:[50,"Gute Kenntnisse"],B2:[65,"Gute Kenntnisse"],C1:[85,"Fortgeschrittene Kenntnisse"],C2:[100,"Verhandlungssicher"]};
+function cfgOf(k){return d.cfg[k]||{t:k,on:true}}
+function sb(k,body){var c=cfgOf(k);return body&&c.on?'<div class="sb"><h3>'+esc(c.t)+'</h3>'+body+'</div>':""}
+function sec(k,body){var c=cfgOf(k);return body&&c.on?'<div class="sec"><h2>'+esc(c.t)+'</h2>'+body+'</div>':""}
+function sideHtml(){
+  var p=d.p;
+  return(p.photo?'<div class="ph"><img src="'+p.photo+'" alt="" style="'+pt(p)+'"></div>':'<div class="ph phx"></div>')+
+  sb("it",d.it.map(function(e){return'<p><b>'+esc(e.name)+'</b>'+(e.level?' – '+esc(e.level):'')+'</p>'}).join(""))+
+  sb("langs",d.langs.map(function(e){
+    var m=LV[(e.level||"").trim().toUpperCase()];
+    if(!m)return'<p style="margin-top:8px"><b>'+esc(e.name)+'</b>: '+esc(e.level)+'</p>';
+    return'<p style="margin-top:8px"><b>'+esc(e.name)+'</b>: '+esc(e.level.toUpperCase())+' ('+m[1]+')</p>';
+  }).join(""))+
+  sb("str",d.str.map(function(e){return'<p><b>'+esc(e.title)+'</b>'+(e.desc?' ('+esc(e.desc)+')':'')+'</p>'}).join(""))+
+  sb("certs",d.certs.length?'<ul>'+d.certs.map(function(e){return'<li>'+esc(e.date)+' '+esc(e.title)+'</li>'}).join("")+'</ul>':"");
+}
+function jobHtml(e){
+  var b=(e.bullets||"").split("\n").filter(function(x){return x.trim()});
+  return'<div class="job"><div>'+esc(e.date)+'</div><div><b>'+esc(e.company)+'</b>'+(e.place?' | '+esc(e.place):'')+'</div><div>'+esc(e.role)+'</div>'+(b.length?'<ul>'+b.map(function(x){return'<li>'+esc(x)+'</li>'}).join("")+'</ul>':'')+'</div>';
+}
+function eduHtml(e){
+  return'<div class="job"><div>'+esc(e.date)+'</div><div><b>'+esc(e.school)+'</b></div><div><b>'+esc(e.degree)+'</b>'+(e.field?': '+esc(e.field):'')+'</div></div>';
+}
+function units(){
+  var p=d.p,u=[];
+  var IC={phone:'<svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>',mail:'<svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>',pin:'<svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>'};
+  var c=[["phone",p.phone],["mail",p.email],["pin",p.addr]].filter(function(x){return x[1]}).map(function(x){return'<div class="ci">'+IC[x[0]]+'<span>'+esc(x[1])+'</span></div>'}).join("");
+  u.push({h:'<div class="ttl">Lebenslauf</div><h1 class="name">'+esc((p.name||"Dein Name").trim())+'</h1><div class="contact">'+c+'</div>'});
+  if(p.summary)u.push({s:1,h:'<div class="sec"><h2>Zusammenfassung</h2><p>'+esc(p.summary)+'</p></div>'});
+  function list(k,arr,fn){
+    var cf=cfgOf(k);if(!cf.on)return;
+    arr.forEach(function(e,i){
+      var it=fn(e);
+      if(i===0)u.push({s:1,h:'<div class="sec"><h2>'+esc(cf.t)+'</h2>'+it+'</div>'});
+      else u.push({h:it});
+    });
+  }
+  list("jobs",d.jobs,jobHtml);list("edu",d.edu,eduHtml);
+  return u;
+}
+var CAP=1058;
+function unitDiv(x){return'<div class="u'+(x.s?' s':'')+'">'+x.h+'</div>'}
+function renderView(){
+  var us=units(),p=d.p;
+  var dt=new Date().toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"});
+  var foot='<div class="foot"><div class="sig">'+esc(p.name)+'</div>'+esc(p.name)+(p.place?', '+esc(p.place):'')+' den '+dt+'</div>';
+  var m=$("meas");
+  m.innerHTML=us.map(unitDiv).join("")+'<div class="u">'+foot+'</div>';
+  var hs=[].map.call(m.children,function(n){return n.offsetHeight}),fh=hs.pop();
+  var pages=[[]],used=0;
+  us.forEach(function(x,i){
+    if(used+hs[i]>CAP&&pages[pages.length-1].length){pages.push([]);used=0}
+    pages[pages.length-1].push(x);used+=hs[i];
+  });
+  if(used+fh>CAP)pages.push([]);
+  $("cv").innerHTML=pages.map(function(pg,n){
+    return'<div class="page"><div class="side">'+(n===0?sideHtml():'')+'</div><div class="main">'+pg.map(unitDiv).join("")+(n===pages.length-1?foot:'')+'</div></div>';
+  }).join("");
+  fit();
+}
+function fit(){
+  var w=$("wrap"),c=$("cv");if(!w.offsetWidth)return;
+  var s=Math.min(1,w.clientWidth/794);
+  c.style.transform=s<1?"scale("+s+")":"none";
+  w.style.height=(c.offsetHeight*s)+"px";
+}
+window.addEventListener("resize",fit);
+window.addEventListener("beforeprint",function(){$("wrap").style.height="auto"});
+window.addEventListener("afterprint",fit);
+function show(v){
+  var ed=v==="edit";
+  $("edit").classList.toggle("hide",!ed);$("view").classList.toggle("hide",ed);
+  $("t-edit").setAttribute("aria-selected",ed);$("t-view").setAttribute("aria-selected",!ed);
+  if(!ed)renderView();
+  window.scrollTo(0,0);
+}
+document.addEventListener("input",function(e){
+  var t=e.target.dataset;if(!t||!t.g)return;
+  if(t.g==="p")d.p[t.k]=e.target.value;else if(t.g==="cfg")d.cfg[t.k].t=e.target.value;else d[t.g][+t.i][t.k]=e.target.value;
+  save();
+});
+document.addEventListener("change",function(e){
+  if(e.target.id!=="photo"||!e.target.files[0])return;
+  var r=new FileReader();
+  r.onload=function(){
+    var im=new Image();
+    im.onload=function(){
+      var k=Math.min(1,800/Math.max(im.width,im.height)),cv=document.createElement("canvas");cv.width=Math.round(im.width*k);cv.height=Math.round(im.height*k);
+      cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);
+      d.p.photo=cv.toDataURL("image/jpeg",.85);d.p.pz=1;d.p.px=0;d.p.py=0;save();renderEdit();
+    };
+    im.src=r.result;
+  };
+  r.readAsDataURL(e.target.files[0]);
+});
+function clampPan(){var m=((+d.p.pz||1)-1)*50;d.p.px=Math.max(-m,Math.min(m,+d.p.px||0));d.p.py=Math.max(-m,Math.min(m,+d.p.py||0))}
+function upd(){var im=document.querySelector("#pe img");if(im)im.setAttribute("style",pt(d.p))}
+document.addEventListener("input",function(e){
+  if(e.target.id!=="zoom")return;
+  d.p.pz=+e.target.value;clampPan();save();upd();
+});
+var drag=null;
+document.addEventListener("pointerdown",function(e){
+  var pe=e.target.closest&&e.target.closest("#pe");if(!pe)return;
+  drag={x:e.clientX,y:e.clientY,px:+d.p.px||0,py:+d.p.py||0,w:pe.offsetWidth};
+  try{pe.setPointerCapture(e.pointerId)}catch(x){}
+  e.preventDefault();
+});
+document.addEventListener("pointermove",function(e){
+  if(!drag)return;
+  d.p.px=drag.px+(e.clientX-drag.x)/drag.w*100;
+  d.p.py=drag.py+(e.clientY-drag.y)/drag.w*100;
+  clampPan();upd();
+});
+function endDrag(){if(drag){drag=null;save()}}
+document.addEventListener("pointerup",endDrag);
+document.addEventListener("pointercancel",endDrag);
+document.addEventListener("click",function(e){
+  var b=e.target.closest("button");if(!b)return;
+  if(b.id==="t-edit")show("edit");
+  else if(b.id==="t-view"||b.id==="go")show("view");
+  else if(b.id==="print"){try{window.print()}catch(x){}}
+  else if(b.id==="preset"){d.p.pz=1;d.p.px=0;d.p.py=0;save();renderEdit();}
+  else if(b.id==="nophoto"){d.p.photo="";d.p.pz=1;d.p.px=0;d.p.py=0;save();renderEdit();}
+  else if(b.id==="clear"){if(confirm("Wirklich alle Eingaben löschen?")){d=blank();initCfg();save();renderEdit();}}
+  else if(b.dataset.tog){var c=d.cfg[b.dataset.tog];c.on=!c.on;save();renderEdit();}
+  else if(b.dataset.add){d[b.dataset.add].push({});save();renderEdit();}
+  else if(b.dataset.del){var a=b.dataset.del.split(":");d[a[0]].splice(+a[1],1);save();renderEdit();}
+});
+renderEdit();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){if(!$("view").classList.contains("hide"))renderView()});
+</script>
+</body>
+</html>
